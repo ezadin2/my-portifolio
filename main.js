@@ -28,20 +28,20 @@ let clipNames = [
 ];
 let projects = [
   {
-    image: 'textures/project-spaze.webp',
-    url: 'https://www.spaze.social/',
+    image: 'textures/proshop.png',
+    url: 'https://proshop-67w4.onrender.com/',
   },
   {
-    image: 'textures/project-myteachers.jpg',
-    url: 'https://myteachers.com.au/',
+    image: 'textures/project-myteachers.gif',
+    url: 'https://abuanwar072.github.io/Flutter-Responsive-Admin-Panel-or-Dashboard/',
   },
   {
     image: 'textures/project-wholesale.jpg',
-    url: 'https://wholesale.com.np/',
+    url: 'https://github.com/ezadin2/Flight-Booking-App-Flutter.git',
   },
   {
-    image: 'textures/project-pelotero.jpg',
-    url: 'https://www.peloterosenlaweb.com/',
+    image: 'textures/chatApp.jpg',
+    url: 'https://nextjs-setup-gilt.vercel.app/',
   },
 ];
 let aboutCameraPos = {
@@ -317,7 +317,7 @@ function loadIntroText() {
       new THREE.MeshPhongMaterial({ color: 0x171f27, flatShading: true }),
       new THREE.MeshPhongMaterial({ color: 0xffffff }),
     ];
-    const titleGeo = new TextGeometry('SUSHIL THAPA', {
+    const titleGeo = new TextGeometry('Ezadin Badiru', {
       font: font,
       size: 0.08,
       height: 0.01,
@@ -334,7 +334,7 @@ function loadIntroText() {
       new THREE.MeshPhongMaterial({ color: 0xffffff }),
     ];
     const subTitleGeo = new TextGeometry(
-      'Web Designer / Developer / Content Creator',
+      'Flutter Developer / UI/UX Designer / Content Creator',
       {
         font: font,
         size: 0.018,
