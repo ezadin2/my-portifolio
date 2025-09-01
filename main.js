@@ -28,8 +28,13 @@ let clipNames = [
 ];
 let projects = [
   {
+    image: 'textures/adminandmobile.jpg',
+    url: 'https://aregenkibet.web.app',
+    mobileUrl: 'https://adminpanel-bx43q6fid-ezadin-badrus-projects.vercel.app/'
+  },
+  {
     image: 'textures/proshop.png',
-    url: 'https://proshop-67w4.onrender.com/',
+    url: 'https://github.com/ezadin2/proshop-demo.git',
   },
   {
     image: 'textures/project-myteachers.gif',
@@ -41,7 +46,11 @@ let projects = [
   },
   {
     image: 'textures/chatApp.jpg',
-    url: 'https://nextjs-setup-gilt.vercel.app/',
+    url: 'https://github.com/ezadin2/nextjs-setup',
+  },
+   {
+    image: 'textures/audio.png',
+    url: 'https://github.com/ezadin2/Audio-player.git',
   },
 ];
 let aboutCameraPos = {
@@ -348,6 +357,7 @@ function loadIntroText() {
   });
 }
 
+// Your existing switchTheme function (I'll modify it to include the logo border update)
 function switchTheme(themeType) {
   if (themeType === 'dark') {
     lightSwitch.rotation.z = Math.PI / 7;
@@ -484,8 +494,20 @@ function switchTheme(themeType) {
       intensity: 0,
     });
   }
+  
+  // Update logo border color - ADD THIS LINE
+  updateLogoBorder();
 }
 
+// Function to update logo border based on theme
+function updateLogoBorder() {
+  const logo = document.getElementById('logo').querySelector('img');
+  const isDarkTheme = document.body.classList.contains('dark-theme');
+  logo.style.borderColor = isDarkTheme ? '#4a6cf7' : '#fff';
+}
+
+// Initialize logo border on page load
+document.addEventListener('DOMContentLoaded', updateLogoBorder);
 function enableOrbitControls() {
   controls.enabled = true;
 }
@@ -602,8 +624,10 @@ function aboutMenuListener() {
 function projectsMenuListener() {
   // create project planes with textures
   projects.forEach((project, i) => {
-    const colIndex = i % 3 === 0 ? 0 : 1;
-    const rowIndex = Math.floor(i / 3);
+    const cols = 3; // Number of columns
+    const colIndex = i % cols;
+    const rowIndex = Math.floor(i / cols);
+    
     const geometry = new THREE.PlaneGeometry(0.71, 0.4);
     const material = new THREE.MeshBasicMaterial({
       color: 0xffffff,
@@ -615,16 +639,26 @@ function projectsMenuListener() {
     projectPlane.name = 'project';
     projectPlane.userData = {
       url: project.url,
+      mobileUrl: project.mobileUrl // Add mobileUrl to userData
     };
-    projectPlane.position.set(
-      0.3 + i * 0.8 * colIndex,
-      1 - rowIndex * 0.5,
-      -1.15
-    );
+    
+    // Calculate the proper position for each project
+    // Adjust these values to position the grid correctly
+    const startX = 0.3;
+    const startY = 1.1; // Lowered this value to position grid lower
+    const spacingX = 0.8;
+    const spacingY = 0.5;
+    
+    const xPos = startX + colIndex * spacingX;
+    const yPos = startY - rowIndex * spacingY;
+    
+    projectPlane.position.set(xPos, yPos, -1.15);
     projectPlane.scale.set(0, 0, 0);
-    // mesh & y vars needed for animation
+    
+    // Store the original position for animation
     projects[i].mesh = projectPlane;
-    projects[i].y = 1 - rowIndex * 0.5;
+    projects[i].originalY = yPos; // Store the original Y position
+    
     scene.add(projectPlane);
   });
 
@@ -652,19 +686,114 @@ function projectsMenuListener() {
           duration: 1.5,
           delay: 1.5 + i * 0.1,
         });
+        // Remove the upward animation that was pushing projects too high
+        // Keep them at their original position
         gsap.to(project.mesh.position, {
-          y: project.y + 0.05,
+          y: project.originalY, // Use the stored original Y position
           duration: 1,
           delay: 1.5 + i * 0.1,
         });
       });
     });
 }
-
 function init3DWorldClickListeners() {
   const mousePosition = new THREE.Vector2();
   const raycaster = new THREE.Raycaster();
   let intersects;
+
+  // Create modal for project selection
+  const createProjectSelectionModal = (mobileUrl, adminUrl) => {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('project-selection-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // Create modal element
+    const modal = document.createElement('div');
+    modal.id = 'project-selection-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    `;
+    
+    // Modal content
+    modal.innerHTML = `
+      <div style="
+        background-color: ${theme === 'light' ? '#fff' : '#1a1a1a'};
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        max-width: 400px;
+        width: 80%;
+        text-align: center;
+      ">
+        <h3 style="margin-top: 0; color: ${theme === 'light' ? '#333' : '#fff'};">Open Project</h3>
+        <p style="color: ${theme === 'light' ? '#666' : '#ccc'};">This project has both a mobile application and an admin dashboard. Which would you like to view?</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+          <button id="mobile-app-btn" style="
+            padding: 0.8rem 1.5rem;
+            background-color: #4a6cf7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+          ">Mobile App</button>
+          <button id="admin-dashboard-btn" style="
+            padding: 0.8rem 1.5rem;
+            background-color: ${theme === 'light' ? '#f0f0f0' : '#333'};
+            color: ${theme === 'light' ? '#333' : '#fff'};
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+          ">Admin Dashboard</button>
+        </div>
+        <button id="close-modal-btn" style="
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          background: none;
+          border: none;
+          font-size: 1.5rem;
+          cursor: pointer;
+          color: ${theme === 'light' ? '#666' : '#ccc'};
+        ">&times;</button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add event listeners
+    document.getElementById('mobile-app-btn').addEventListener('click', () => {
+      window.open(mobileUrl, '_blank');
+      modal.remove();
+    });
+    
+    document.getElementById('admin-dashboard-btn').addEventListener('click', () => {
+      window.open(adminUrl, '_blank');
+      modal.remove();
+    });
+    
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+      modal.remove();
+    });
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  };
 
   window.addEventListener('click', function (e) {
     // store value set to prevent multi time update in foreach loop
@@ -688,8 +817,15 @@ function init3DWorldClickListeners() {
     intersects = raycaster.intersectObjects(scene.children);
     intersects.forEach((intersect) => {
       if (intersect.object.name === 'project') {
-        intersect.object.userData.url &&
-          window.open(intersect.object.userData.url);
+        // Check if it's the adminandmobile project and show options
+        if (intersect.object.userData.mobileUrl) {
+          createProjectSelectionModal(
+            intersect.object.userData.url, 
+            intersect.object.userData.mobileUrl
+          );
+        } else {
+          intersect.object.userData.url && window.open(intersect.object.userData.url, '_blank');
+        }
       }
 
       if (
@@ -759,13 +895,13 @@ document.getElementById('close-btn').addEventListener('click', (e) => {
 });
 
 // contact menu
+// contact menu
 document.getElementById('contact-btn').addEventListener('click', (e) => {
   e.preventDefault();
   document
     .querySelector('.contact-menu__dropdown')
     .classList.toggle('contact-menu__dropdown--open');
 });
-
 document.addEventListener('mouseup', (e) => {
   const container = document.querySelector('.contact-menu');
   if (!container.contains(e.target)) {
@@ -781,3 +917,5 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+
